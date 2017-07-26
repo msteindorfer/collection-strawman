@@ -16,6 +16,8 @@ trait View[+A] extends Iterable[A] with IterableOps[A, View, View[A]] {
   protected[this] def newSpecificBuilder(): Builder[A, View[A]] =
     immutable.IndexedSeq.newBuilder().mapResult(_.view)
 
+  protected[this] def c: View[A] = this
+
   override def toString = "View(?)"
 
   override def className = "View"

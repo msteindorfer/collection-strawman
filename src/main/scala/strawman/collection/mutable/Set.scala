@@ -26,8 +26,8 @@ trait SetOps[A, +CC[X], +C <: Set[A]]
         toRemove -= elem
       }
     }
-    for (elem <- toRemove) coll -= elem
-    for (elem <- toAdd) coll += elem
+    for (elem <- toRemove) c -= elem
+    for (elem <- toAdd) c += elem
     this
   }
 
@@ -39,12 +39,12 @@ trait SetOps[A, +CC[X], +C <: Set[A]]
 
   def insert(elem: A): Boolean =
     !contains(elem) && {
-      coll += elem; true
+      c += elem; true
     }
 
   def remove(elem: A): Option[A] = {
     val res = get(elem)
-    coll -= elem
+    c -= elem
     res
   }
 
@@ -60,8 +60,8 @@ trait SetOps[A, +CC[X], +C <: Set[A]]
           toAdd += mapped
           toRemove -= elem
         }
-    for (elem <- toRemove) coll -= elem
-    for (elem <- toAdd) coll += elem
+    for (elem <- toRemove) c -= elem
+    for (elem <- toAdd) c += elem
     this
   }
 
@@ -70,7 +70,7 @@ trait SetOps[A, +CC[X], +C <: Set[A]]
     for (elem <- this)
       if (!p(elem)) toRemove += elem
     for (elem <- toRemove)
-      coll -= elem
+      c -= elem
     this
   }
 

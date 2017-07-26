@@ -32,6 +32,8 @@ trait IterableOps[+A, +CC[X], +C] extends Any {
 
   protected[this] def coll: Iterable[A]
 
+  protected[this] def c: C
+
   protected[this] def fromSpecificIterable(coll: Iterable[A]): C
 
   protected[this] def fromIterable[E](it: Iterable[E]): CC[E] = iterableFactory.fromIterable(it)
@@ -447,6 +449,23 @@ trait IterableOps[+A, +CC[X], +C] extends Any {
     *               predicate `pred`. Their order may not be preserved.
     */
   def filterNot(pred: A => Boolean): C = fromSpecificIterable(View.Filter(coll, (a: A) => !pred(a)))
+
+  /** Creates a non-strict filter of this $coll.
+    *
+    *  Note: the difference between `c filter p` and `c withFilter p` is that
+    *        the former creates a new collection, whereas the latter only
+    *        restricts the domain of subsequent `map`, `flatMap`, `foreach`,
+    *        and `withFilter` operations.
+    *  $orderDependent
+    *
+    *  @param p   the predicate used to test elements.
+    *  @return    an object of class `WithFilter`, which supports
+    *             `map`, `flatMap`, `foreach`, and `withFilter` operations.
+    *             All these operations apply to those elements of this $coll
+    *             which satisfy the predicate `p`.
+    */
+  def withFilter(p: A => Boolean): WithFilter[A, C] =
+    new WithFilter[A, C](c, coll, p)
 
   /** A pair of, first, all elements that satisfy prediacte `p` and, second,
     *  all elements that do not. Interesting because it splits a collection in two.

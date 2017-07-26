@@ -7,15 +7,15 @@ import scala.util.hashing.MurmurHash3
 
 /** Base trait for set collections.
   */
-trait Set[A] extends Iterable[A] with SetOps[A, Set, Set[A]]
+trait Set[A] extends Iterable[A] with SetOps[A, Set, Set[A]] {
+  protected[this] def c: this.type = this
+}
 
 /** Base trait for set operations */
 trait SetOps[A, +CC[X], +C <: Set[A]]
   extends IterableOps[A, CC, C]
      with (A => Boolean)
      with Equals {
-
-  protected[this] def coll: C
 
   def contains(elem: A): Boolean
 
@@ -115,7 +115,7 @@ trait SetOps[A, +CC[X], +C <: Set[A]]
       case _ => false
     }
 
-  override def hashCode(): Int = Set.setHash(coll)
+  override def hashCode(): Int = Set.setHash(c)
 
   /** Computes the intersection between this set and another set.
     *

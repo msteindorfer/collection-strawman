@@ -28,8 +28,8 @@ class ArrayOps[A](val xs: Array[A])
 
   def iterableFactory = immutable.IndexedSeq
 
-  protected[this] def fromTaggedIterable[B: ClassTag](coll: Iterable[B]): Array[B] = coll.toArray[B]
-  protected[this] def fromSpecificIterable(coll: Iterable[A]): Array[A] = coll.toArray[A](elemTag)
+  protected[this] def fromTaggedIterable[B: ClassTag](it: Iterable[B]): Array[B] = it.toArray[B]
+  protected[this] def fromSpecificIterable(it: Iterable[A]): Array[A] = it.toArray[A](elemTag)
 
   protected[this] def newSpecificBuilder() = new GrowableBuilder(ArrayBuffer.empty[A]).mapResult(_.toArray(elemTag))
 

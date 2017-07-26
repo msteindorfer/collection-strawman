@@ -22,7 +22,6 @@ trait SeqOps[+A, +CC[X], +C] extends Any
   with ArrayLike[A]
   with Equals {
 
-  protected[this] def c: C
   protected[this] def seq: Seq[A]
 
   /** Returns new $coll with elements in reversed order.
