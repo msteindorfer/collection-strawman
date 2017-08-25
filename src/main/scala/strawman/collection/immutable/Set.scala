@@ -46,4 +46,4 @@ trait SetOps[A, +CC[X], +C <: SetOps[A, CC, C]]
 
 }
 
-object Set extends IterableFactory.Delegate[Set](HashSet)
+object Set extends IterableFactory.Delegate[Set](CapsuleHashSet)

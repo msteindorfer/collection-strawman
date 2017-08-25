@@ -6,6 +6,9 @@ val commonSettings = Seq(
   organization := "ch.epfl.scala",
   version := "0.4.0-SNAPSHOT",
   resolvers += "scala-pr" at "https://scala-ci.typesafe.com/artifactory/scala-pr-validation-snapshots",
+  resolvers += Resolver.mavenLocal,
+  resolvers += "usethesource-releases" at "http://nexus.usethesource.io/content/repositories/releases",
+  resolvers += "usethesource-snapshots" at "http://nexus.usethesource.io/content/repositories/snapshots",
   scalaVersion := "2.12.2-ebe1180-SNAPSHOT", // from https://github.com/scala/scala/pull/5742
   scalaBinaryVersion := { if (!scalaVersion.value.startsWith("2.12.")) scalaBinaryVersion.value else "2.12" },
   crossScalaVersions := scalaVersion.value :: "2.13.0-M1" :: dotty.value :: Nil,
@@ -28,6 +31,7 @@ val collections =
       name := "collection-strawman",
       libraryDependencies ++= Seq(
         ("org.scala-lang.modules" %% "scala-java8-compat" % "0.8.0").withDottyCompat(),
+        "io.usethesource" %% "capsule" % "0.5.0-SNAPSHOT",
         "com.novocode" % "junit-interface" % "0.11" % Test
       ),
       pomExtra :=
