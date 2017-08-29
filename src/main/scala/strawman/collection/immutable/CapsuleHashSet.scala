@@ -10,7 +10,7 @@ import io.usethesource.capsule.core.PersistentTrieSet
 import io.usethesource.capsule.core.PersistentTrieSet.SetResult
 
 import strawman.collection.Hashing.computeHash
-import strawman.collection.mutable.{Builder, ReusableBuilder}
+import strawman.collection.mutable.{Builder, ImmutableBuilder, ReusableBuilder}
 import scala.{Any, AnyRef, Array, Boolean, Int, NoSuchElementException, SerialVersionUID, Serializable, Unit, `inline`, sys}
 import scala.Predef.assert
 
@@ -60,48 +60,59 @@ object CapsuleHashSet extends IterableFactory[CapsuleHashSet] {
   def fromIterable[A](it: collection.Iterable[A]): CapsuleHashSet[A] =
     it match {
       case hs: CapsuleHashSet[A] => hs
-      case _ => empty ++ it
+      case _ => {
+        //  empty ++ it
+        val builder = newBuilder[A]()
+        it.foreach(item => builder += item)
+        builder.result
+      }
     }
 
   def empty[A]: CapsuleHashSet[A] = EMPTY_SET.asInstanceOf[CapsuleHashSet[A]]
 
-  def newBuilder[A](): Builder[A, CapsuleHashSet[A]] =
-    new ReusableBuilder[A, CapsuleHashSet[A]] {
+//  def newBuilder[A](): Builder[A, CapsuleHashSet[A]] =
+//    new ImmutableBuilder[A, CapsuleHashSet[A]](empty) {
+//      def add(elem: A): this.type = { elems = elems + elem; this }
+//    }
 
-      private val mutator = new AtomicReference[Thread](Thread.currentThread)
+  def newBuilder[A](): Builder[A, CapsuleHashSet[A]] = new HashTrieSetBuilder[A](
+    PersistentTrieSet.EMPTY_NODE.asInstanceOf[PersistentTrieSet.AbstractSetNode[A]], 0, 0)
 
-      private var rootNode: PersistentTrieSet.AbstractSetNode[A] = PersistentTrieSet.EMPTY_NODE.asInstanceOf[PersistentTrieSet.AbstractSetNode[A]]
-      private var cachedHashCode: Int = 0
-      private var cachedSize: Int = 0
+  private[immutable] final class HashTrieSetBuilder[A](private var rootNode: PersistentTrieSet.AbstractSetNode[A],
+                                                       private var cachedHashCode: Int,
+                                                       private var cachedSize: Int)
+    extends ReusableBuilder[A, CapsuleHashSet[A]] {
 
-      override def clear(): Unit = {
-        rootNode = PersistentTrieSet.EMPTY_NODE.asInstanceOf[PersistentTrieSet.AbstractSetNode[A]]
-        cachedHashCode = 0
-        cachedSize = 0
-      }
+    private val mutator = new AtomicReference[Thread](Thread.currentThread)
 
-      override def add(elem: A) = {
-        if (mutator.get == null) throw new java.lang.IllegalStateException("Transient already frozen.")
-
-        val elemHash = elem.hashCode // computeHash(elem)
-        val details = SetResult.unchanged[A]
-
-        val newRootNode = rootNode.updated(mutator, elem, elemHash, 0, details)
-
-        if (details.isModified) {
-          rootNode = newRootNode
-          cachedHashCode += elemHash
-          cachedSize += 1
-        }
-
-        this
-      }
-
-      override def result() = {
-        mutator set null
-        new HashTrieSet[A](rootNode, cachedHashCode, cachedSize)
-      }
+    override def clear(): Unit = {
+      rootNode = PersistentTrieSet.EMPTY_NODE.asInstanceOf[PersistentTrieSet.AbstractSetNode[A]]
+      cachedHashCode = 0
+      cachedSize = 0
     }
+
+    override def add(elem: A) = {
+      if (mutator.get == null) throw new java.lang.IllegalStateException("Transient already frozen.")
+
+      val elemHash = elem.hashCode // computeHash(elem)
+      val details = SetResult.unchanged[A]
+
+      val newRootNode = rootNode.updated(mutator, elem, elemHash, 0, details)
+
+      if (details.isModified) {
+        rootNode = newRootNode
+        cachedHashCode += elemHash
+        cachedSize += 1
+      }
+
+      this
+    }
+
+    override def result() = {
+      mutator set null
+      new HashTrieSet[A](rootNode, cachedHashCode, cachedSize)
+    }
+  }
 
   private[immutable] final class HashTrieSet[A](private[immutable] val rootNode: PersistentTrieSet.AbstractSetNode[A],
                                                 private[immutable] val cachedHashCode: Int,
