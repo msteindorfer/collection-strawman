@@ -4,6 +4,8 @@ package immutable
 
 import scala.{Any, `inline`}
 
+import strawman.collection.mutable.Builder
+
 /** Base trait for immutable set collections */
 trait Set[A] extends Iterable[A] with collection.Set[A] with SetOps[A, Set, Set[A]]
 
@@ -46,4 +48,21 @@ trait SetOps[A, +CC[X], +C <: SetOps[A, CC, C]]
 
 }
 
-object Set extends IterableFactory.Delegate[Set](CapsuleHashSet)
+object Set extends IterableFactory[Set] {
+
+  private val useCapsule = java.lang.Boolean.getBoolean("strawman.collection.immutable.useCapsule")
+
+  private val delegate = {
+    if (useCapsule)
+      new IterableFactory.Delegate[Set](CapsuleHashSet)
+    else
+      new IterableFactory.Delegate[Set](HashSet)
+  }
+
+  override def empty[A]: Set[A] = delegate.empty
+
+  override def fromIterable[E](it: collection.Iterable[E]): Set[E] = delegate.fromIterable(it)
+
+  override def newBuilder[A](): Builder[A, Set[A]] = delegate.newBuilder[A]()
+
+}
