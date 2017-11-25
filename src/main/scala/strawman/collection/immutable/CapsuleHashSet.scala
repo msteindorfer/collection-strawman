@@ -3,7 +3,7 @@ package collection
 package immutable
 
 import java.lang.Thread
-import java.util.NoSuchElementException
+import java.util.{Comparator, NoSuchElementException}
 import java.util.concurrent.atomic.AtomicReference
 
 import io.usethesource.capsule.core.PersistentTrieSet
@@ -13,6 +13,7 @@ import strawman.collection.Hashing.computeHash
 import strawman.collection.mutable.{Builder, ImmutableBuilder, ReusableBuilder}
 import scala.{Any, AnyRef, Array, Boolean, Int, NoSuchElementException, SerialVersionUID, Serializable, Unit, `inline`, sys}
 import scala.Predef.assert
+import scala.runtime.BoxesRunTime
 
 /** This class implements immutable sets using a hash trie.
   *
@@ -165,7 +166,8 @@ object CapsuleHashSet extends IterableFactory[CapsuleHashSet] {
           (this eq set) ||
             (cachedSize == set.cachedSize) &&
               (cachedHashCode == set.cachedHashCode) &&
-              (rootNode == set.rootNode)
+              (rootNode.equivalent(set.rootNode,
+                (x: scala.AnyRef, y: scala.AnyRef) => (x eq y) || BoxesRunTime.equals2(x, y)))
         case _ => super.equals(that)
       }
 
